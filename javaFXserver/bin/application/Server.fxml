@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.HBox?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.serverFXMLController">
+   <children>
+      <Label layoutX="193.0" layoutY="25.0" text="JavaFX Server">
+         <font>
+            <Font size="36.0" />
+         </font>
+      </Label>
+      <Button fx:id="startServerButton" layoutX="407.0" layoutY="188.0" mnemonicParsing="false" onAction="#startServer" prefHeight="27.0" prefWidth="137.0" text="Click to Start Server" />
+      <Label fx:id="uploadFolder" layoutX="146.0" layoutY="136.0" text="No Folder Selected" />
+      <Label layoutX="76.0" layoutY="109.0" text="Select folder for received files">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Button fx:id="selectFolder" layoutX="408.0" layoutY="98.0" mnemonicParsing="false" onAction="#folderSelection" prefHeight="60.0" prefWidth="137.0" text="Click to Select Folder" />
+      <Label layoutX="76.0" layoutY="205.0" text="Server Listening Port">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TextField fx:id="port" layoutX="278.0" layoutY="206.0" prefHeight="25.0" prefWidth="64.0" promptText="10000" text="10000" />
+      <TextArea fx:id="connStat" layoutX="76.0" layoutY="279.0" prefHeight="107.0" prefWidth="468.0" promptText="Server Status" />
+      <Label layoutX="76.0" layoutY="262.0" text="Server Status" />
+      <Button fx:id="stopServerButton" layoutX="408.0" layoutY="231.0" mnemonicParsing="false" onAction="#stopServer" prefHeight="25.0" prefWidth="137.0" text="Exit" />
+   </children>
+</Pane>
