@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_Q2KFYKwvEee1O6vbamSGcQ" name="RootElement">
+  <packageImport xmi:type="uml:PackageImport" xmi:id="_Q_eZcKwvEee1O6vbamSGcQ">
+    <importedPackage xmi:type="uml:Model" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#_0"/>
+  </packageImport>
+  <packagedElement xmi:type="uml:Interaction" xmi:id="_Q5a0wKwvEee1O6vbamSGcQ" name="Interaction1">
+    <formalGate xmi:type="uml:Gate" xmi:id="_dnMY0Kw4Eee1O6vbamSGcQ" name="gate0" message="_do9TYKw4Eee1O6vbamSGcQ"/>
+    <message xmi:type="uml:Message" xmi:id="_do9TYKw4Eee1O6vbamSGcQ" name="Message" messageSort="asynchSignal" receiveEvent="_dnMY0Kw4Eee1O6vbamSGcQ"/>
+  </packagedElement>
+</uml:Model>
