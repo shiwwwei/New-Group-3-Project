@@ -5,12 +5,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="node.nodeFXMLController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="172.0" prefWidth="579.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="node.nodeFXMLController">
    <children>
-      <Button fx:id="startButton" layoutX="459.0" layoutY="62.0" mnemonicParsing="false" onAction="#startNode" text="Start" />
-      <TextField fx:id="nodeName" layoutX="220.0" layoutY="62.0" prefHeight="25.0" prefWidth="160.0" />
-      <Label layoutX="101.0" layoutY="66.0" text="Set node name" />
-      <TextArea fx:id="statusBox" layoutX="41.0" layoutY="130.0" prefHeight="200.0" prefWidth="528.0" />
-      <Label layoutX="41.0" layoutY="113.0" text="Status" />
+      <Button fx:id="startButton" layoutX="433.0" layoutY="50.0" mnemonicParsing="false" onAction="#startNode" prefHeight="25.0" prefWidth="114.0" text="Start" />
+      <TextField fx:id="nodeName" layoutX="130.0" layoutY="50.0" prefHeight="25.0" prefWidth="160.0" />
+      <Label layoutX="26.0" layoutY="54.0" text="Set node name" />
+      <TextArea fx:id="statusBox" layoutX="26.0" layoutY="108.0" prefHeight="51.0" prefWidth="528.0" />
+      <Label layoutX="26.0" layoutY="91.0" text="Status" />
    </children>
 </Pane>

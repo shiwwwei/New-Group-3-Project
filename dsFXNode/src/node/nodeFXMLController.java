@@ -13,16 +13,30 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
 
+
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import node.task.taskType;
+final class processLine {
+	public String processName;
+	public double lineXLocation;
+}
 
 public class nodeFXMLController {
 	@FXML
@@ -36,8 +50,16 @@ public class nodeFXMLController {
 	public int serverUpdatePort;
 	public String controllerIP;
 	public boolean startSimulation = false;
+	List<processLine> processX = new ArrayList();
+	
+	public GraphicsContext nodeDiagGC;
+	public Canvas nodeDiagCanvas = new Canvas(800,500);
+	
+	Stage nodeDiagStg = new Stage();
 
 	public nodeReference node = new nodeReference();
+	double firstArrowYOffset;
+	public int arrowsDrawn =0;
 
 	@FXML
 	protected void startNode() {
@@ -53,9 +75,55 @@ public class nodeFXMLController {
 		statusBox.setText("Connected to controller and receieved tasks..\n");
 		String testString = gsonObj.toJson(node);
 		statusBox.setText(statusBox.getText() + testString + "\n");
-
+		
+		Pane root = new Pane();
+		
+		
+		nodeDiagGC = nodeDiagCanvas.getGraphicsContext2D();
+	//	classDiagGC.fillText("Distributed System Messaging", 10, 20);
+		
+		
+		Scene scene = new Scene(root, 800,460);
+		
+		   
+		nodeDiagStg.setTitle("Task Sequence Diagram");
+  
+		nodeDiagStg.setScene(scene);
+		nodeDiagStg.setX(340);
+		
+		nodeDiagStg.setY(220);
+		
+		root.getChildren().add(nodeDiagCanvas);
+		nodeDiagStg.show();
+		drawNode();
+		
 		sequenceControllerTask();
 
+	}
+	public void drawNode() {
+		nodeDiagGC.strokeRect(10, 10, nodeDiagGC.getCanvas().getWidth()-10, nodeDiagGC.getCanvas().getHeight()-10);
+		double width = nodeDiagGC.getCanvas().getWidth()/(2*node.procs.size());
+		double height = width *3/4;
+		double YOffset = height/2;
+		for(int i=1;i<=node.procs.size();i++) {
+			nodeDiagGC.setLineWidth(2);
+			double Xoffset= (((nodeDiagGC.getCanvas().getWidth()/node.procs.size())*i )- (nodeDiagGC.getCanvas().getWidth()/(2*node.procs.size()))) - (width/2);
+			nodeDiagGC.strokeRect(Xoffset, YOffset, width, height);
+			nodeDiagGC.setLineWidth(0.5);
+			nodeDiagGC.strokeLine(Xoffset+(width/2), YOffset+height, Xoffset+(width/2), nodeDiagGC.getCanvas().getHeight());
+			nodeDiagGC.setFill(Color.BLACK);
+			nodeDiagGC.fillText(node.procs.get(i-1).name, Xoffset+width/5, YOffset+(height/2));
+			nodeDiagGC.setFill(Color.MOCCASIN);
+			processLine tempProcLine= new processLine();
+			tempProcLine.lineXLocation =Xoffset+(width/2);
+			tempProcLine.processName = 	node.procs.get(i-1).name;	
+			processX.add(tempProcLine);
+		}
+		//Font font = new Font(12);
+		//System.out.println(Font.getFontNames());
+		firstArrowYOffset= (YOffset+height)+nodeDiagGC.getCanvas().getHeight()/8;
+		
+		
 	}
 
 	public void sequenceControllerTask() {
@@ -147,6 +215,14 @@ public class nodeFXMLController {
 			DataOutputStream dout = new DataOutputStream(soc.getOutputStream());
 			dout.writeUTF(currentTask.msg);
 			soc.close();
+			
+			Platform.runLater(new Runnable() {
+				public void run() {
+				//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+					
+	                drawArrow(currentTask);
+					}
+		});
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -247,4 +323,54 @@ public class nodeFXMLController {
 
 	}
 
+	public void drawArrow (task tmpTask) {
+		double fromX=0;
+		double toX=0;
+		boolean toSet = false;
+		for(int i=0;i<processX.size();i++) {
+			
+			if(processX.get(i).processName.equals(tmpTask.from)) 
+			{
+				fromX = processX.get(i).lineXLocation;
+				
+			}
+			if(processX.get(i).processName.equals(tmpTask.to))
+			{
+				toX=processX.get(i).lineXLocation;
+				toSet = true;
+			}
+		}
+		if(toSet == false) {
+			toX=nodeDiagGC.getCanvas().getWidth()-10;
+		}
+		
+		double Y = firstArrowYOffset + (arrowsDrawn*((nodeDiagGC.getCanvas().getHeight()-firstArrowYOffset)/totalSendTasks()));
+		arrowsDrawn++;
+		
+		nodeDiagGC.setStroke(Color.DARKBLUE);
+		nodeDiagGC.setLineWidth(0.85);
+		nodeDiagGC.strokeLine(fromX, Y, toX, Y);
+		nodeDiagGC.setFont(Font.font(10));
+		nodeDiagGC.strokeText(tmpTask.msg, (fromX+(toX-fromX)/4), Y-3);
+		if(toX>fromX) {
+			nodeDiagGC.strokeLine(toX, Y,toX-6,Y-6);
+			nodeDiagGC.strokeLine(toX, Y,toX-6,Y+6);
+		}
+		else {
+			nodeDiagGC.strokeLine(toX, Y,toX+6,Y-6);
+			nodeDiagGC.strokeLine(toX, Y,toX+6,Y+6);
+		}
+		
+	}
+	public int totalSendTasks() {
+		int totSendTask=0;
+			for(int j=0;j<node.procs.size();j++) {
+				for(int k=0;k<node.procs.get(j).tasks.size();k++)
+				if (node.procs.get(j).tasks.get(k).taskType == taskType.SEND)
+					totSendTask++;
+	
+			}
+		
+		return totSendTask;
+	}
 }
