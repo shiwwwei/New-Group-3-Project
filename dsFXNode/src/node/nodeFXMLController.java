@@ -103,7 +103,7 @@ public class nodeFXMLController {
 	public void drawNode() {
 		nodeDiagGC.strokeRect(10, 10, nodeDiagGC.getCanvas().getWidth()-10, nodeDiagGC.getCanvas().getHeight()-10);
 		double width = nodeDiagGC.getCanvas().getWidth()/(2*node.procs.size());
-		double height = width *3/4;
+		double height = 80;
 		double YOffset = height/2;
 		for(int i=1;i<=node.procs.size();i++) {
 			nodeDiagGC.setLineWidth(2);
@@ -144,15 +144,16 @@ public class nodeFXMLController {
 
 	public void sequenceControlRun() throws InterruptedException {
 		for (int i = 0; i < node.procs.size(); i++) {
-			procRun(node.procs.get(i), i);
+			for(int k=0;k<node.procs.get(i).paraNum;k++)
+				procRun(node.procs.get(i), i,k+1);
 		}
 	}
 
-	public void procRun(processes proc, int procIndex) {
+	public void procRun(processes proc, int procIndex,int paraID) {
 		Runnable procControlTask = new Runnable() {
 			public void run() {
 				try {
-					procThreadRun(proc);
+					procThreadRun(proc,paraID);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -165,9 +166,9 @@ public class nodeFXMLController {
 		procThread.start();
 	}
 
-	public void procThreadRun(processes proc) throws InterruptedException {
+	public void procThreadRun(processes proc, int paraID) throws InterruptedException {
 		System.out.println("\nthread for  :" + proc.name);
-		System.out.println("\n I have :" + proc.tasks.size() + " tasks\n");
+		System.out.println("\n I have :" + proc.tasks.size() + " tasks\n" + paraID);
 
 		ServerSocket processListenSocket;
 
@@ -176,7 +177,7 @@ public class nodeFXMLController {
 			System.out.println("I am listening at :" + processListenSocket.getLocalPort());
 			Socket soc = new Socket(controllerIP, serverUpdatePort);
 			DataOutputStream updateStream = new DataOutputStream(soc.getOutputStream());
-			updateStream.writeUTF(proc.name + "," + Integer.toString(processListenSocket.getLocalPort()));
+			updateStream.writeUTF(proc.name + "," + Integer.toString(processListenSocket.getLocalPort())+","+Integer.toString(paraID));
 			soc.close();
 
 			Socket sockReadStart=processListenSocket.accept();
@@ -184,15 +185,21 @@ public class nodeFXMLController {
 			String startmsg = din.readUTF();
 		//	System.out.println(startmsg);
 			if (startmsg.contains("start")) {
+				
 				for (int i = 0; i < proc.tasks.size(); i++) {
-					if (proc.tasks.get(i).taskType == taskType.SEND)
-						processSendTask(proc.tasks.get(i));
-					else {
-						Socket sock = processListenSocket.accept();
-						DataInputStream in = new DataInputStream(sock.getInputStream());
-						String msg = in.readUTF();
-						System.out.println(msg);
+					if(proc.tasks.get(i).paraID==paraID) {
+						
+						if (proc.tasks.get(i).taskType == taskType.SEND)
+							processSendTask(proc.tasks.get(i),paraID);
+						else {
+							Socket sock = processListenSocket.accept();
+							DataInputStream in = new DataInputStream(sock.getInputStream());
+							String msg = in.readUTF();
+							System.out.println(msg);
+						}
 					}
+					
+					
 				
 				}
 			}
@@ -204,9 +211,15 @@ public class nodeFXMLController {
 
 	}
 
-	public void processSendTask(task currentTask) {
+	public void processSendTask(task currentTask,int paraID) {
 
-		String toIp = resolvProcess(currentTask);
+		taskDetail temp = new taskDetail();
+		temp.from = currentTask.from;
+		temp.to =  currentTask.to;
+		temp.msg= new String[1];
+		temp.msg[0] = currentTask.msg;
+		temp.parID = paraID;
+		String toIp = resolvProcess(temp);
 		List<String> items = Arrays.asList(toIp.split("\\s*,\\s*"));
 		int destPort = Integer.valueOf(items.get(1).replaceAll("[^\\d.]", ""));
 		String Ip = items.get(0);
@@ -234,7 +247,7 @@ public class nodeFXMLController {
 	}
 
 
-	public String resolvProcess(task currentTask) {
+	public String resolvProcess(taskDetail currentTask) {
 		try {
 			
 			Socket soc = new Socket(controllerIP, serverUpdatePort);
