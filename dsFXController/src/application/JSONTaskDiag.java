@@ -22,6 +22,7 @@ final class diag{
 	public dContent content[];
 }
 
+
 public class JSONTaskDiag {
 	public metadata meta;
 	public String type;
@@ -29,13 +30,25 @@ public class JSONTaskDiag {
 	public diag diagram;
 	
 	public JSONTaskDiag() {}
-	public List<nodeContent> getTaskForProcess(String process) {
-		List<nodeContent> taskList = new ArrayList();
+	public List<taskDetail> getTaskForProcess(String process) {
+		List<taskDetail> taskList = new ArrayList();
+		taskDetail temp = new taskDetail();
 		for(int i=0;i<diagram.content.length;i++) {
 			
 			for(int j=0;j<diagram.content[i].content.length;j++) {
-				if(diagram.content[i].content[j].from.equals( process) ||diagram.content[i].content[j].to.equals(process))
-					taskList.add(diagram.content[i].content[j]);
+				
+				if(diagram.content[i].content[j].from.equals( process) ||diagram.content[i].content[j].to.equals(process)) {
+				//	taskDetail temp = new taskDetail();;
+					temp = new taskDetail();
+				temp.from = diagram.content[i].content[j].from;
+				temp.to = diagram.content[i].content[j].to;
+				temp.node = diagram.content[i].content[j].node;
+				temp.msg = diagram.content[i].content[j].message;
+				temp.parID = i+1;
+				
+					taskList.add(temp);
+					temp = new taskDetail();
+				}
 			}
 		}
 			

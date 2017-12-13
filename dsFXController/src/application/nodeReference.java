@@ -9,13 +9,20 @@ final class task {
 	public String from;
 	public String to;
 	public String msg;
+	public int paraID;
 	public task() {}
 	
+}
+final class portData {
+	public int port;
+	public int paraID;
 }
 final class processes {
 	public String name;
 	public List<task> tasks = new ArrayList();
-	int recvPort;
+	public List<portData> recvPort = new ArrayList();
+	public int paraNum = 0;
+	
 	public processes() {
 		
 	}

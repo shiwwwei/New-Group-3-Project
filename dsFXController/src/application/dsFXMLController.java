@@ -15,6 +15,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,9 +49,14 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 import java.nio.channels.SocketChannel;
 
-final class processLine {
+final class imageRef {
 	public String processName;
 	public double lineXLocation;
+	public double x;
+	public double y;
+	public double width;
+	public double height;
+	public double currentYLoc =0;
 }
 
 public class dsFXMLController {
@@ -75,7 +81,7 @@ public class dsFXMLController {
 	
 	Pane basePane;
 	
-	public classdiag cldiagwindow = new classdiag();
+	//public classdiag cldiagwindow = new classdiag();
 
 	private FileChooser classDiagfileChooser = new FileChooser();
 	private FileChooser depDiagfileChooser = new FileChooser();
@@ -108,7 +114,10 @@ public class dsFXMLController {
 	public boolean allProcessUp = false;
 	public boolean simulationComplete = false;
 	
-	public List<processLine> procLine = new ArrayList();
+	public List<imageRef> procLine = new ArrayList();
+	public List<imageRef> nodeImageBox = new ArrayList();
+	public List<imageRef> nodeImageProcBox = new ArrayList();
+	public List<imageRef> classImageBox = new ArrayList();
 	public int arrowsDrawn =0;
 	public double firstArrowYOffset =0;
 	
@@ -128,59 +137,65 @@ public class dsFXMLController {
 	
 	Stage taskDiagStg = new Stage();
 	GraphicsContext gc;
-	Stage preLaunchStage = new Stage();
+	
+	public imageRef presentationLayer = new imageRef();
+	public List<imageRef> paraLayer = new ArrayList();
+	
+	//Stage preLaunchStage = new Stage();
 
 	
 	
 
 	public void initialize() {
-//	//	gc =canvas.getGraphicsContext2D();
-//		System.out.println("graphics context obtained");
-//		Canvas canvas = new Canvas(1000, 800);
-//		gc = canvas.getGraphicsContext2D();
-//		gc.setLineWidth(1);
-//		new Thread(new Runnable()
-//		{
-//			public void run()
-//			{
-//				try
-//				{
-//					drawUser(50, 70, "user1");
-//					Thread.sleep(1000);
-//					drawArrowLine(50, 120, 300, 0);
-//					gc.fillText("Keyboard/Monitor", 170, 115);
-//					drawBox(350, 50, "Coordinator",
-//							"Application for\nUpload and parse\nJSON File,connecting to\nother nodes");
-//					Thread.sleep(1000);
-//					drawArrowLine(300, 350, 210, 315);
-//					gc.fillText("TCP & UDP Connection", 310, 270);
-//					drawArrowLine(700, 350, 210, 225);
-//					gc.fillText("TCP & UDP Connection", 550, 270);
-//					Thread.sleep(1000);
-//					drawBox(150, 350, "Node1",
-//							"Application for\ndisplay the\nsimulation and send\nconfirmation to\ncoordinator");
-//					drawBox(550, 350, "Node2",
-//							"Application for\ndiaplay the\nsimulation and send\nconfirmation to\ncoordinator");
-//					Thread.sleep(1000);
-//
-//					drawArrowLine(50, 600, 200, 330);
-//					gc.fillText("Keyboard/Monitor", 100, 550);
-//					drawArrowLine(950, 600, 200, 210);
-//					gc.fillText("Keyboard/Monitor", 800, 550);
-//					Thread.sleep(1000);
-//					drawUser(50, 550, "user2");
-//					drawUser(950, 550, "user3");
-//				} catch (InterruptedException e)
-//				{
-//					e.printStackTrace();
-//				}
-//			}
-//		}).start();
-//		Pane root = new Pane();
-//		root.getChildren().add(canvas);
-//		Scene scene = new Scene(root, 1000, 700);
-//		preLaunchStage.setScene(scene);
-//		preLaunchStage.show();
+	//	gc =canvas.getGraphicsContext2D();
+		System.out.println("graphics context obtained");
+		/*Canvas canvas = new Canvas(1000, 700);
+		gc = canvas.getGraphicsContext2D();
+		gc.setLineWidth(1);
+		new Thread(new Runnable()
+		{
+			public void run()
+			{
+				try
+				{
+					drawUser(50, 70, "user1");
+					Thread.sleep(1000);
+					drawArrowLine(50, 120, 300, 0);
+					gc.fillText("Keyboard/Monitor", 170, 115);
+					drawBox(350, 50, "Coordinator",
+							"Application for\nUpload and parse\nJSON File,connecting to\nother nodes");
+					Thread.sleep(1000);
+					drawArrowLine(300, 350, 210, 315);
+					gc.fillText("TCP & UDP Connection", 310, 270);
+					drawArrowLine(700, 350, 210, 225);
+					gc.fillText("TCP & UDP Connection", 550, 270);
+					Thread.sleep(1000);
+					drawBox(150, 350, "Node1",
+							"Application for\ndisplay the\nsimulation and send\nconfirmation to\ncoordinator");
+					drawBox(550, 350, "Node2",
+							"Application for\ndiaplay the\nsimulation and send\nconfirmation to\ncoordinator");
+					Thread.sleep(1000);
+
+					drawArrowLine(50, 600, 200, 330);
+					gc.fillText("Keyboard/Monitor", 100, 550);
+					drawArrowLine(950, 600, 200, 210);
+					gc.fillText("Keyboard/Monitor", 800, 550);
+					Thread.sleep(1000);
+					drawUser(50, 550, "user2");
+					drawUser(950, 550, "user3");
+				} catch (InterruptedException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		Pane root = new Pane();
+		root.getChildren().add(canvas);
+		Scene scene = new Scene(root, 1000, 700);
+		preLaunchStage.setScene(scene);
+		preLaunchStage.setX(0);
+		preLaunchStage.setY(0);
+		preLaunchStage.show();*/
 		//renderBackground();
 	}
 	
@@ -237,17 +252,22 @@ public class dsFXMLController {
 	public void startSimulationRun() throws InterruptedException {
 		while (allProcessUp != true)
 			Thread.sleep(100);
+		
 		for(int i=0;i<nodes.size();i++) {
 			for(int j=0;j<nodes.get(i).procs.size();j++) {
-				try {
-					Socket soc = new Socket(nodes.get(i).ipAddress,nodes.get(i).procs.get(j).recvPort);
-					DataOutputStream dis = new DataOutputStream(soc.getOutputStream());
-					dis.writeUTF("start");
-					soc.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				for(int k=0;k<nodes.get(i).procs.get(j).paraNum;k++) {
+					try {
+						
+						Socket soc = new Socket(nodes.get(i).ipAddress,nodes.get(i).procs.get(j).recvPort.get(k).port); 
+						DataOutputStream dis = new DataOutputStream(soc.getOutputStream());
+						dis.writeUTF("start");
+						soc.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				
 			}
 		}
 		
@@ -280,11 +300,12 @@ public class dsFXMLController {
 				Socket resolvSoc = destResolvServer.accept();
 				DataInputStream request = new DataInputStream(resolvSoc.getInputStream());
 				String req = request.readUTF();
-				task tmpTask = new task();
+				//System.out.println(req);
+				taskDetail tmpTask = new taskDetail();
 				Gson taskGson=new Gson();
 				tmpTask=taskGson.fromJson(req, tmpTask.getClass());
 				req = tmpTask.to;
-				task finTask = tmpTask;
+				taskDetail finTask = tmpTask;
 				double randSleep =Math.random()*2000;
 				try {
 					Thread.sleep(0+(int)randSleep);
@@ -303,7 +324,15 @@ public class dsFXMLController {
 					for (int j = 0; j < nodes.get(i).procs.size(); j++) {
 						if (nodes.get(i).procs.get(j).name.equals(req)) {
 							DataOutputStream resp = new DataOutputStream(resolvSoc.getOutputStream());
-							resp.writeUTF(nodes.get(i).ipAddress + "," +nodes.get(i).procs.get(j).recvPort);
+							int destPort = 0;
+							for(int k=0;k<nodes.get(i).procs.get(j).recvPort.size();k++) {
+								if(nodes.get(i).procs.get(j).recvPort.get(k).paraID == finTask.parID) {
+									destPort = nodes.get(i).procs.get(j).recvPort.get(k).port;
+									resp.writeUTF(nodes.get(i).ipAddress + "," +Integer.toString(destPort));
+								}
+									
+							}
+							
 							
 						}
 					}
@@ -337,10 +366,11 @@ public class dsFXMLController {
 	public void updatePortRun() throws InterruptedException {
 		int totalProcess = 0;
 		for (int i = 0; i < nodes.size(); i++) {
-			totalProcess = totalProcess + nodes.get(i).procs.size();
+			for(int k=0;k<nodes.get(i).procs.size();k++)
+			totalProcess = totalProcess + nodes.get(i).procs.get(k).paraNum;
 		}
 		int processUpdated = 0;
-
+		System.out.println("Total process number :"+totalProcess);
 		try {
 			updateProcessserver = new ServerSocket(updateListenPort);
 			while (processUpdated < totalProcess) {
@@ -351,10 +381,15 @@ public class dsFXMLController {
 				List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
 				int processPort = Integer.valueOf(items.get(1).replaceAll("[^\\d.]", ""));
 				String procName = items.get(0);
+				int paraID = Integer.valueOf(items.get(2).replaceAll("[^\\d.]", ""));
 				for (int i = 0; i < nodes.size(); i++) {
 					for (int j = 0; j < nodes.get(i).procs.size(); j++) {
 						if (nodes.get(i).procs.get(j).name.equals(procName)) {
-							nodes.get(i).procs.get(j).recvPort = processPort;
+							portData temp = new portData();
+							temp.paraID = paraID;
+							temp.port = processPort;
+							nodes.get(i).procs.get(j).recvPort.add(temp) ;
+							
 						}
 					}
 				}
@@ -364,6 +399,7 @@ public class dsFXMLController {
 			Gson tmp = new Gson();
 			System.out.println(tmp.toJson(nodes));
 			allProcessUp = true;
+		
 			updateProcessSocket.close();
 			updateProcessserver.close();
 
@@ -380,15 +416,16 @@ public class dsFXMLController {
 			tempNode.name = devices.get(i);
 
 			List<String> procNames = depDiagObj.getProcessForNodes(tempNode.name);
-
+			System.out.println(procNames);
 			for (int j = 0; j < procNames.size(); j++) {
-
+				
 				processes tempProcs = new processes();
 				tempProcs.name = procNames.get(j);
-
-				List<nodeContent> tempNodeContent = new ArrayList();
+				tempProcs.paraNum = tempProcs.paraNum +1;
+				List< taskDetail> tempNodeContent = new ArrayList();
 				tempNodeContent = taskDiagObj.getTaskForProcess(tempProcs.name);
-				for (int k = 0; k < tempNodeContent.size(); k++) {
+				int k;
+				for (k = 0; k < tempNodeContent.size(); k++) {
 					task tempTask = new task();
 					if (tempNodeContent.get(k).from.equals(tempProcs.name))
 						tempTask.taskType = taskType.SEND;
@@ -396,9 +433,11 @@ public class dsFXMLController {
 						tempTask.taskType = taskType.RECV;
 					tempTask.from = tempNodeContent.get(k).from;
 					tempTask.to = tempNodeContent.get(k).to;
-					tempTask.msg = String.join(" ", tempNodeContent.get(k).message);
+					tempTask.msg = String.join(" ", tempNodeContent.get(k).msg);
+					tempTask.paraID=tempNodeContent.get(k).parID;
 					tempProcs.tasks.add(tempTask);
 				}
+				tempProcs.paraNum = tempProcs.tasks.get(k-1).paraID;
 				tempNode.procs.add(tempProcs);
 			}
 
@@ -451,6 +490,7 @@ public class dsFXMLController {
 				DataInputStream in = new DataInputStream(socket.getInputStream());
 				String str = (String) in.readUTF();
 				System.out.println("Accepted Connection from :" + str);
+				
 				for (int i = 0; i < nodes.size(); i++) {
 					if (nodes.get(i).name.equals(str)) {
 						nodesConnected++;
@@ -462,6 +502,15 @@ public class dsFXMLController {
 						InetSocketAddress tempNodeIP = (InetSocketAddress) socket.getRemoteSocketAddress();
 						System.out.println(tempNodeIP.getAddress().getHostAddress());
 						nodes.get(i).ipAddress = tempNodeIP.getAddress().getHostAddress();
+						   updateNodeInDepDiag(nodes.get(i).name);
+							//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+								for(int k=0;k<nodes.get(i).procs.size();k++) {
+									updateProcInTaskDiag(nodes.get(i).procs.get(k).name);
+									updateProcInDepDiag(nodes.get(i).procs.get(k).name);
+								}
+				                
+								
+				
 					}
 				}
 			}
@@ -665,6 +714,18 @@ public class dsFXMLController {
 		double cellXSize = depDiagGC.getCanvas().getWidth() - 50;
 		double cellYSize =(depDiagGC.getCanvas().getHeight()/numberOfNodes)- yOffset -10;
 		for(int i=0;i<devices.size();i++) {
+	
+			//update node Box
+			imageRef tempProcLine= new imageRef();
+			tempProcLine.lineXLocation =0;
+			tempProcLine.processName = 	devices.get(i);	
+			tempProcLine.x = xOffset;
+			tempProcLine.y= yOffset;
+			tempProcLine.height=cellYSize;
+			tempProcLine.width=cellXSize;
+			nodeImageBox.add(tempProcLine);
+			
+			
 			depDiagGC.strokeRect(xOffset, yOffset, cellXSize,cellYSize);
 			depDiagGC.setFill(Color.DARKRED);
 			depDiagGC.fillText(devices.get(i), xOffset+10, yOffset+20);
@@ -676,6 +737,14 @@ public class dsFXMLController {
 			double nodeHeight = cellYSize - 40;
 			for(int j=0;j<procsInNode.size();j++) {
 				depDiagGC.setStroke(Color.BLACK);
+				imageRef tempNodeProc= new imageRef();
+				tempNodeProc.lineXLocation =0;
+				tempNodeProc.processName = procsInNode.get(j);	
+				tempNodeProc.x = nodeXoffset;
+				tempNodeProc.y= nodeYoffset;
+				tempNodeProc.height=nodeHeight;
+				tempNodeProc.width=nodeWidth;
+				nodeImageProcBox.add(tempNodeProc);
 				depDiagGC.strokeRect(nodeXoffset, nodeYoffset, nodeWidth,nodeHeight);
 				depDiagGC.fillText(procsInNode.get(j), nodeXoffset+nodeWidth/2 , nodeYoffset+(nodeHeight)/2);
 				nodeXoffset = nodeXoffset+nodeWidth+20;
@@ -743,6 +812,28 @@ public class dsFXMLController {
 		double width = taskDiagGC.getCanvas().getWidth()/(2*taskd.processes.length);
 		double height = width *3/4;
 		double YOffset = height/2;
+		System.out.println("Number of parallel simulations :"+taskd.diagram.content.length);
+	
+		int numParSim = taskd.diagram.content.length;
+		presentationLayer.x=20;
+		presentationLayer.y=height+YOffset + 10;
+		presentationLayer.height=taskDiagGC.getCanvas().getHeight()-presentationLayer.y;
+		presentationLayer.width= taskDiagGC.getCanvas().getWidth() - (2*presentationLayer.x);
+		taskDiagGC.strokeRoundRect(presentationLayer.x, presentationLayer.y,presentationLayer.width,presentationLayer.height-20, 20, 20);
+		paraLayer = parallelDispLayers(presentationLayer,numParSim);
+		taskDiagGC.strokeRoundRect(presentationLayer.x,presentationLayer.y, 50, 20, 20, 10);
+		taskDiagGC.setFill(Color.BLACK);
+		taskDiagGC.fillText("Par",presentationLayer.x+10,presentationLayer.y+15);
+	
+			double dashes[] = {5.0,20.0};
+			taskDiagGC.setLineDashes(dashes);
+			taskDiagGC.setLineWidth(0.7);
+		for(int i=0;i<paraLayer.size();i++) {
+			System.out.println(paraLayer.get(i).x+":"+paraLayer.get(i).y);
+			taskDiagGC.strokeRect(paraLayer.get(i).x, paraLayer.get(i).y, paraLayer.get(i).width,paraLayer.get(i).height);
+		}
+		
+		taskDiagGC.setLineDashes(null);	
 		for(int i=1;i<=taskd.processes.length;i++) {
 			taskDiagGC.setLineWidth(2);
 			double Xoffset= (((taskDiagGC.getCanvas().getWidth()/taskd.processes.length)*i )- (taskDiagGC.getCanvas().getWidth()/(2*taskd.processes.length))) - (width/2);
@@ -752,9 +843,13 @@ public class dsFXMLController {
 			taskDiagGC.setFill(Color.BLACK);
 			taskDiagGC.fillText(taskd.processes[i-1].name+ ":" + taskd.processes[i-1].classes, Xoffset+width/5, YOffset+(height/2));
 			taskDiagGC.setFill(Color.MOCCASIN);
-			processLine tempProcLine= new processLine();
+			imageRef tempProcLine= new imageRef();
 			tempProcLine.lineXLocation =Xoffset+(width/2);
 			tempProcLine.processName = 	taskd.processes[i-1].name;	
+			tempProcLine.x = Xoffset;
+			tempProcLine.y= YOffset;
+			tempProcLine.height=height;
+			tempProcLine.width=width;
 			procLine.add(tempProcLine);
 		}
 		//Font font = new Font(12);
@@ -783,10 +878,11 @@ public class dsFXMLController {
 		}
 		return totSendTask;
 	}
-	public void drawArrow (task tmpTask) {
+	public void drawArrow (taskDetail tmpTask) {
 		double fromX=0;
 		double toX=0;
-		
+		java.util.Date date= new java.util.Date();
+		Timestamp T = new Timestamp(date.getTime());
 		for(int i=0;i<procLine.size();i++) {
 			if(procLine.get(i).processName.equals(tmpTask.from)) 
 			{
@@ -798,83 +894,136 @@ public class dsFXMLController {
 				toX=procLine.get(i).lineXLocation;
 			}
 		}
+		double Y=0;
+		int totalTasksinSim = taskDiagObj.diagram.content[tmpTask.parID - 1].content.length;
+				
+	//	for(i=0;i<nodes.size())
+		if(paraLayer.get(tmpTask.parID-1).currentYLoc==0) {
+			Y = paraLayer.get(tmpTask.parID-1).y +20;
+			paraLayer.get(tmpTask.parID-1).currentYLoc = Y;
+		}
+		else {
+			Y= paraLayer.get(tmpTask.parID-1).currentYLoc + paraLayer.get(tmpTask.parID-1).height/totalTasksinSim;
+			paraLayer.get(tmpTask.parID-1).currentYLoc =Y;
+		}
 		
-		double Y = firstArrowYOffset + (arrowsDrawn*((taskDiagGC.getCanvas().getHeight()-firstArrowYOffset)/totalSendTasks()));
-		arrowsDrawn++;
+		
 		
 		taskDiagGC.setStroke(Color.DARKBLUE);
 		taskDiagGC.setLineWidth(0.85);
 		taskDiagGC.strokeLine(fromX, Y, toX, Y);
 		taskDiagGC.setFont(Font.font(10));
-		taskDiagGC.strokeText(tmpTask.msg, (fromX+(toX-fromX)/4), Y-3);
+		String msg = new String(tmpTask.msg[0]);
+	
+		for(int i=1;i<tmpTask.msg.length;i++)
+			msg = msg + tmpTask.msg[i];
+		msg = msg +"  at : "+T.toString();
+		
 		if(toX>fromX) {
+			taskDiagGC.strokeText(msg,fromX+ (toX-fromX)/4, Y-3);
 			taskDiagGC.strokeLine(toX, Y,toX-6,Y-6);
 			taskDiagGC.strokeLine(toX, Y,toX-6,Y+6);
 		}
 		else {
+			taskDiagGC.strokeText(msg,toX+ (fromX-toX) /4, Y-3);
 			taskDiagGC.strokeLine(toX, Y,toX+6,Y-6);
 			taskDiagGC.strokeLine(toX, Y,toX+6,Y+6);
 		}
 		
 	}
 
-	void drawUser(int x, int y, String name)
+	public void updateProcInTaskDiag(String ProcName)
 	{
-		gc.save();
-		gc.translate(x, y);
-		gc.strokeOval(-15, 0, 30, 25);
-		gc.strokeLine(-30, 35, 30, 35);
-		gc.strokeLine(0, 25, 0, 65);
-		gc.strokeLine(0, 65, -30, 100);
-		gc.strokeLine(0, 65, 30, 100);
-		gc.fillText(name, -15, 120);
-		gc.restore();
+		
+		for(int i=0;i<procLine.size();i++) {
+			if(procLine.get(i).processName.equals(ProcName)) 
+			{
+				System.out.println("getting process :"+ProcName);
+				double x =procLine.get(i).x;
+				double y = procLine.get(i).y;
+				double width =procLine.get(i).width;
+				double height = procLine.get(i).height;
+				
+				Platform.runLater(new Runnable() {
+					public void run() {
+					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+						System.out.println("Ok am here :"+x+y+height+width);
+						taskDiagGC.setStroke(Color.GREEN);
+						taskDiagGC.setLineWidth(5);
+						taskDiagGC.strokeRect(x+1, y+1, width-1, height-1);
+						}
+			});
+				
+			}
+		
+		}
+		
+		
 	}
 
-	void drawBox(int x, int y, String title, String content)
-	{
-		gc.save();
-		gc.translate(x, y);
-		gc.setFill(Color.BLACK);
-		gc.strokeLine(0, 0, 10, -10);
-		gc.strokeLine(10, -10, 310, -10);
-		gc.strokeLine(310, -10, 300, 0);
-		gc.strokeLine(300, 0, 0, 0);
-		gc.strokeLine(0, 0, 0, 150);
-		gc.strokeLine(0, 150, 300, 150);
-		gc.strokeLine(300, 150, 310, 140);
-		gc.strokeLine(310, 140, 310, -10);
-		gc.strokeLine(310, -10, 300, 0);
-		gc.strokeLine(300, 0, 300, 150);
-		gc.setFont(Font.font(16));
-		gc.strokeLine(5, 22, 15 + title.length() * 8, 22);
-		gc.fillText(title, 5, 20);
-		gc.strokeRect(70, 25, 215, 110);
-		gc.setFill(Color.WHITE);
-		gc.strokeRect(50, 45, 40, 20);
-		gc.fillRect(51, 46, 38, 18);
-		gc.strokeRect(50, 85, 40, 20);
-		gc.fillRect(51, 86, 38, 18);
-		gc.setFill(Color.BLACK);
-		gc.fillText(content, 100, 50);
-		gc.restore();
+	public List<imageRef> parallelDispLayers(imageRef source,int paraNum) {
+		List<imageRef> parallelLayer = new ArrayList();
+		
+		double heightOfLayer = source.height/paraNum;
+		for(int i=0;i<paraNum;i++) {
+			imageRef tempParaLayer = new imageRef();
+			tempParaLayer.x=source.x;
+			tempParaLayer.y=i*heightOfLayer+source.y;
+			tempParaLayer.height = heightOfLayer;
+			tempParaLayer.width=source.width;
+			parallelLayer.add(tempParaLayer);
+		}
+		return parallelLayer;
 	}
-
-	void drawArrowLine(int x, int y, double len, double angle)
-	{
-		// double len = Math.sqrt((x - ex) * (x - ex) + (y - ey) * (y - ey));
-		// double angle = 180+Math.atan((y - ey) / (x - ex) * 1.0) * 180;
-		gc.save();
-		gc.translate(x, y);
-		gc.rotate(angle);
-		gc.strokeLine(0, 0, len, 0);
-		gc.fillPolygon(new double[]
-		{ 0, 10, 10 }, new double[]
-		{ 0, -5, 5 }, 3);
-		gc.fillPolygon(new double[]
-		{ len, len - 10, len - 10 }, new double[]
-		{ 0, -5, 5 }, 3);
-		gc.restore();
+	
+	
+	public void updateNodeInDepDiag(String nodeName) {
+		for(int i=0;i<nodeImageBox.size();i++) {
+			if(nodeImageBox.get(i).processName.equals(nodeName)) 
+			{
+				System.out.println("getting process :"+nodeName);
+				double x =nodeImageBox.get(i).x;
+				double y = nodeImageBox.get(i).y;
+				double width =nodeImageBox.get(i).width;
+				double height = nodeImageBox.get(i).height;
+				
+				Platform.runLater(new Runnable() {
+					public void run() {
+					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+						System.out.println("Ok am here :"+x+y+height+width);
+						depDiagGC.setStroke(Color.GREEN);
+						depDiagGC.setLineWidth(5);
+						depDiagGC.strokeRect(x+1, y+1, width-1, height-1);
+						}
+			});
+				
+			}
 	}
-
+	}
+	public void updateProcInDepDiag(String nodeName) {
+		System.out.println("getting process :"+nodeName);
+		for(int i=0;i<nodeImageProcBox.size();i++) {
+			
+			if(nodeImageProcBox.get(i).processName.equals(nodeName)) 
+			{
+				
+				double x =nodeImageProcBox.get(i).x;
+				double y = nodeImageProcBox.get(i).y;
+				double width =nodeImageProcBox.get(i).width;
+				double height = nodeImageProcBox.get(i).height;
+				
+				Platform.runLater(new Runnable() {
+					public void run() {
+					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+						System.out.println("Ok am here :"+x+y+height+width);
+						depDiagGC.setStroke(Color.GREEN);
+						depDiagGC.setLineWidth(5);
+						depDiagGC.strokeRect(x+1, y+1, width-1, height-1);
+						}
+			});
+				
+			}
+	}
+	}
 }
+
