@@ -44,6 +44,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -62,6 +64,8 @@ final class imageRef {
 public class dsFXMLController {
 	@FXML
 	Button startButton;
+	@FXML
+	Button startSim;
 	@FXML
 	Button stopButton;
 	@FXML
@@ -111,7 +115,8 @@ public class dsFXMLController {
 	Socket updateProcessSocket = null;
 	ServerSocket updateProcessserver = null;
 
-	public boolean allProcessUp = false;
+	public static boolean allProcessUp = false;
+	public static boolean beginSimulation = false;
 	public boolean simulationComplete = false;
 	
 	public List<imageRef> procLine = new ArrayList();
@@ -122,18 +127,18 @@ public class dsFXMLController {
 	public double firstArrowYOffset =0;
 	
 	public GraphicsContext classDiagGC;
-	public Canvas classDiagCanvas = new Canvas(340,220);
+	public Canvas classDiagCanvas = new Canvas(800,600);
 	
 	Stage classDiagStg = new Stage();
 	public List<classTree> ClassTree= new ArrayList(); 
 	
 	public GraphicsContext depDiagGC;
-	public Canvas depDiagCanvas = new Canvas(340,460);
+	public Canvas depDiagCanvas = new Canvas(600,700);
 	
 	Stage depDiagStg = new Stage();
 	
 	public GraphicsContext taskDiagGC;
-	public Canvas taskDiagCanvas = new Canvas(800,500);
+	public Canvas taskDiagCanvas = new Canvas(1024,600);
 	
 	Stage taskDiagStg = new Stage();
 	GraphicsContext gc;
@@ -149,54 +154,7 @@ public class dsFXMLController {
 	public void initialize() {
 	//	gc =canvas.getGraphicsContext2D();
 		System.out.println("graphics context obtained");
-		/*Canvas canvas = new Canvas(1000, 700);
-		gc = canvas.getGraphicsContext2D();
-		gc.setLineWidth(1);
-		new Thread(new Runnable()
-		{
-			public void run()
-			{
-				try
-				{
-					drawUser(50, 70, "user1");
-					Thread.sleep(1000);
-					drawArrowLine(50, 120, 300, 0);
-					gc.fillText("Keyboard/Monitor", 170, 115);
-					drawBox(350, 50, "Coordinator",
-							"Application for\nUpload and parse\nJSON File,connecting to\nother nodes");
-					Thread.sleep(1000);
-					drawArrowLine(300, 350, 210, 315);
-					gc.fillText("TCP & UDP Connection", 310, 270);
-					drawArrowLine(700, 350, 210, 225);
-					gc.fillText("TCP & UDP Connection", 550, 270);
-					Thread.sleep(1000);
-					drawBox(150, 350, "Node1",
-							"Application for\ndisplay the\nsimulation and send\nconfirmation to\ncoordinator");
-					drawBox(550, 350, "Node2",
-							"Application for\ndiaplay the\nsimulation and send\nconfirmation to\ncoordinator");
-					Thread.sleep(1000);
-
-					drawArrowLine(50, 600, 200, 330);
-					gc.fillText("Keyboard/Monitor", 100, 550);
-					drawArrowLine(950, 600, 200, 210);
-					gc.fillText("Keyboard/Monitor", 800, 550);
-					Thread.sleep(1000);
-					drawUser(50, 550, "user2");
-					drawUser(950, 550, "user3");
-				} catch (InterruptedException e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}).start();
-		Pane root = new Pane();
-		root.getChildren().add(canvas);
-		Scene scene = new Scene(root, 1000, 700);
-		preLaunchStage.setScene(scene);
-		preLaunchStage.setX(0);
-		preLaunchStage.setY(0);
-		preLaunchStage.show();*/
-		//renderBackground();
+	
 	}
 	
 	@FXML
@@ -209,6 +167,8 @@ public class dsFXMLController {
 		if (classDiagObj == null || depDiagObj == null || taskDiagObj == null) {
 			statusBox.setText(statusBox.getText() + " JSON files not loaded\n");
 		} else {
+			startButton.setDisable(true);
+			
 			statusBox.setText(statusBox.getText() + "JSON files Loaded...\n");
 			statusBox.setText(statusBox.getText() + "Physical nodes required :" + devices + "\n");
 			populateNodes();
@@ -250,9 +210,9 @@ public class dsFXMLController {
 		startSimulationThread.start();
 	}
 	public void startSimulationRun() throws InterruptedException {
-		while (allProcessUp != true)
+		while (beginSimulation != true)
 			Thread.sleep(100);
-		
+		System.out.println("Am not here");;
 		for(int i=0;i<nodes.size();i++) {
 			for(int j=0;j<nodes.get(i).procs.size();j++) {
 				for(int k=0;k<nodes.get(i).procs.get(j).paraNum;k++) {
@@ -290,9 +250,10 @@ public class dsFXMLController {
 	}
 
 	public void destResolvRun() throws InterruptedException {
-		while(!allProcessUp) 
+		while(!beginSimulation) 
 			Thread.sleep(100);
-		if(allProcessUp) {
+		System.out.println("Why am i here\n");
+		if(beginSimulation) {
 		try {
 			ServerSocket destResolvServer = new ServerSocket(updateListenPort);
 			System.out.println("ready to resolv at" + updateListenPort);
@@ -398,7 +359,12 @@ public class dsFXMLController {
 			System.out.println("All process ports Updated");
 			Gson tmp = new Gson();
 			System.out.println(tmp.toJson(nodes));
-			allProcessUp = true;
+			Platform.runLater(new Runnable() {
+				public void run() {
+				//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
+					startSim.setDisable(false);
+					}
+		});
 		
 			updateProcessSocket.close();
 			updateProcessserver.close();
@@ -587,7 +553,7 @@ public class dsFXMLController {
 		//	classDiagGC.fillText("Distributed System Messaging", 10, 20);
 			
 			
-			Scene scene = new Scene(root, 340,220);
+			Scene scene = new Scene(root, 800,600);
 			
 			   
 			classDiagStg.setTitle("classDiag");
@@ -606,14 +572,17 @@ public class dsFXMLController {
 
 	public void drawClass(List <classTree> clsdia) {
 		
-		classDiagGC.setFill(Color.MOCCASIN);
-		
+		//classDiagGC.setFill(Color.web("#FDEBDD"));
+		classDiagGC.setFill(Color.web("#EDEDED"));
 		classDiagGC.setStroke(Color.DARKRED);
-		classDiagGC.setLineWidth(2);
-		classDiagGC.strokeRect(0, 0, classDiagGC.getCanvas().getWidth(), classDiagGC.getCanvas().getHeight());
-		classDiagGC.setFill(Color.BLACK);
+		//classDiagGC.setStroke(Color.web("#C06014"));
+		classDiagGC.setLineWidth(3);
+		classDiagGC.fillRect(0, 0, classDiagGC.getCanvas().getWidth(), classDiagGC.getCanvas().getHeight());
+		classDiagGC.setFill(Color.web("#000000"));
+		//classDiagGC.setFill(Color.FIREBRICK);
+		classDiagGC.setFont(new Font("Verdana",20.0));
 		classDiagGC.fillText("Distributed System Messaging : Class Diagram", 10, 20);
-		classDiagGC.setFill(Color.MOCCASIN);
+		classDiagGC.setFont(new Font("Tahoma",12.0));
 		int numberOfRootNodes = clsdia.size();
 		double xOffset = 10;
 		double yOffset = 40;
@@ -621,7 +590,7 @@ public class dsFXMLController {
 		double cellYSize = classDiagGC.getCanvas().getHeight() - 50;
 		for(int i=0;i<numberOfRootNodes;i++) {
 			classDiagGC.strokeRect(xOffset, yOffset, cellXSize,cellYSize);
-			classDiagGC.setFill(Color.BLACK);
+			classDiagGC.setFill(Color.MIDNIGHTBLUE);
 			classDiagGC.fillText("Class Name :" + clsdia.get(i).name, xOffset+5, yOffset+20);
 			for(int j=0;j<clsdia.get(i).fields.size();j++) {
 				classDiagGC.fillText(clsdia.get(i).fields.get(j).type+":"+clsdia.get(i).fields.get(j).name ,xOffset+5,yOffset+20*(j+2));
@@ -682,7 +651,7 @@ public class dsFXMLController {
 		//	classDiagGC.fillText("Distributed System Messaging", 10, 20);
 			
 			
-			Scene scene = new Scene(root, 340,460);
+			Scene scene = new Scene(root, 600,700);
 			
 			   
 			depDiagStg.setTitle("DepDiag");
@@ -700,14 +669,14 @@ public class dsFXMLController {
 
 	}
 	public void drawNodes(JSONDepDiag depDiagObj) {
-		depDiagGC.setFill(Color.MOCCASIN);
+		depDiagGC.setFill(Color.web("#EDEDED"));
 		
 		depDiagGC.setStroke(Color.DARKRED);
 		depDiagGC.setLineWidth(2);
-		depDiagGC.strokeRect(0, 0, depDiagGC.getCanvas().getWidth(), depDiagGC.getCanvas().getHeight());
+		depDiagGC.fillRect(0, 0, depDiagGC.getCanvas().getWidth(), depDiagGC.getCanvas().getHeight());
 		depDiagGC.setFill(Color.BLACK);
 		depDiagGC.fillText("Distributed System Messaging : Deployment Diagram", 10, 20);
-		depDiagGC.setFill(Color.MOCCASIN);
+		depDiagGC.setFill(Color.web("#EDEDED"));
 		int numberOfNodes = devices.size();
 		double xOffset = 10;
 		double yOffset = 40;
@@ -787,7 +756,7 @@ public class dsFXMLController {
 		//	classDiagGC.fillText("Distributed System Messaging", 10, 20);
 			
 			
-			Scene scene = new Scene(root, 800,460);
+			Scene scene = new Scene(root, 1024,600);
 			
 			   
 			taskDiagStg.setTitle("Task Sequence Diagram");
@@ -842,7 +811,7 @@ public class dsFXMLController {
 			taskDiagGC.strokeLine(Xoffset+(width/2), YOffset+height, Xoffset+(width/2), taskDiagCanvas.getHeight());
 			taskDiagGC.setFill(Color.BLACK);
 			taskDiagGC.fillText(taskd.processes[i-1].name+ ":" + taskd.processes[i-1].classes, Xoffset+width/5, YOffset+(height/2));
-			taskDiagGC.setFill(Color.MOCCASIN);
+			classDiagGC.setFill(Color.web("#EDEDED"));
 			imageRef tempProcLine= new imageRef();
 			tempProcLine.lineXLocation =Xoffset+(width/2);
 			tempProcLine.processName = 	taskd.processes[i-1].name;	
@@ -858,13 +827,13 @@ public class dsFXMLController {
 		
 	}
 	public void renderBackground() {
-		taskDiagGC.setFill(Color.MOCCASIN);
+		taskDiagGC.setFill(Color.web("#EDEDED"));
 		taskDiagGC.setStroke(Color.DARKRED);
 		taskDiagGC.setLineWidth(2);
-		taskDiagGC.strokeRect(0, 0, taskDiagGC.getCanvas().getWidth(), taskDiagGC.getCanvas().getHeight());
+		taskDiagGC.fillRect(0, 0, taskDiagGC.getCanvas().getWidth(), taskDiagGC.getCanvas().getHeight());
 		taskDiagGC.setFill(Color.BLACK);
 		taskDiagGC.fillText("Distributed System Messaging : Task Sequence Diagram", 10, 20,200);
-		taskDiagGC.setFill(Color.MOCCASIN);
+		taskDiagGC.setFill(Color.web("#EDEDED"));
 	}
 	public int totalSendTasks() {
 		int totSendTask=0;
@@ -948,7 +917,7 @@ public class dsFXMLController {
 					public void run() {
 					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
 						System.out.println("Ok am here :"+x+y+height+width);
-						taskDiagGC.setStroke(Color.GREEN);
+						taskDiagGC.setStroke(Color.SEAGREEN);
 						taskDiagGC.setLineWidth(5);
 						taskDiagGC.strokeRect(x+1, y+1, width-1, height-1);
 						}
@@ -991,7 +960,7 @@ public class dsFXMLController {
 					public void run() {
 					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
 						System.out.println("Ok am here :"+x+y+height+width);
-						depDiagGC.setStroke(Color.GREEN);
+						depDiagGC.setStroke(Color.SEAGREEN);
 						depDiagGC.setLineWidth(5);
 						depDiagGC.strokeRect(x+1, y+1, width-1, height-1);
 						}
@@ -1016,7 +985,7 @@ public class dsFXMLController {
 					public void run() {
 					//	System.out.println(tmpTask.from +" "+tmpTask.to+" " +tmpTask.msg );
 						System.out.println("Ok am here :"+x+y+height+width);
-						depDiagGC.setStroke(Color.GREEN);
+						depDiagGC.setStroke(Color.SEAGREEN);
 						depDiagGC.setLineWidth(5);
 						depDiagGC.strokeRect(x+1, y+1, width-1, height-1);
 						}
@@ -1024,6 +993,13 @@ public class dsFXMLController {
 				
 			}
 	}
+	}
+	public void startSimulation()
+	{
+		allProcessUp=true;
+		beginSimulation=true;
+		startSim.setDisable(true);
+		
 	}
 }
 

@@ -6,9 +6,9 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.HBox?>
 
-<Pane  maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.dsFXMLController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.dsFXMLController">
    <children>
-      <Button fx:id="startButton" layoutX="474.0" layoutY="54.0" mnemonicParsing="false" onAction="#controllerStart" prefHeight="25.0" prefWidth="108.0" text="Start Controller" />
+      <Button fx:id="startButton" layoutX="472.0" layoutY="37.0" mnemonicParsing="false" onAction="#controllerStart" prefHeight="25.0" prefWidth="108.0" text="Start Controller" />
       <Button fx:id="stopButton" layoutX="541.0" layoutY="90.0" mnemonicParsing="false" onAction="#controllerStop" text="Stop" />
       <TextArea fx:id="statusBox" layoutX="110.0" layoutY="119.0" prefHeight="44.0" prefWidth="472.0" />
       <Label layoutX="45.0" layoutY="132.0" text="Status :" />
@@ -22,5 +22,6 @@
       <TextField fx:id="classFileText" disable="true" editable="false" layoutX="140.0" layoutY="37.0" promptText="&lt;Select Class Diagram &gt;" />
       <TextField fx:id="depFileText" disable="true" editable="false" layoutX="140.0" layoutY="63.0" promptText="&lt; Select Deployment File&gt;" />
       <TextField fx:id="taskFileText" disable="true" editable="false" layoutX="140.0" layoutY="90.0" promptText="&lt;Select Task Sequence &gt;" />
+      <Button fx:id="startSim" disable="true" layoutX="481.0" layoutY="63.0" mnemonicParsing="false" onAction="#startSimulation" text="Start Simulation" />
    </children>
 </Pane>
